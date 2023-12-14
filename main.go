@@ -77,11 +77,12 @@ func initialModel() model {
 	claudeEnterMessage := "Claude has entered the chat"
 	botStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("5")).Italic(true)
 	claudeEnterMsg := botStyle.Render(claudeEnterMessage)
-	welcome := []string{messagesVPWelcome}
-	welcome = append(welcome, claudeEnterMsg) // Append Claude's entrance message
+
+	welcomeMessage := []string{messagesVPWelcome}
+	welcomeMessage = append(welcomeMessage, claudeEnterMsg) // Append Claude's entrance message
 
 	// Set viewport content with the modified messages slice
-	messagesVP.SetContent(strings.Join(welcome, "\n"))
+	messagesVP.SetContent(strings.Join(welcomeMessage, "\n"))
 
 	// Return model with initial state
 	return model{
