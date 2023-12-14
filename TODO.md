@@ -8,7 +8,7 @@
 
 - [ ] Support multiple LLM backends like GPT-3
 
-- [ ] Implement Chat-style interface via TUI (Bubbletea)
+- [x] Implement Chat-style interface via TUI (Bubbletea)
 
 - [ ] Add unit tests for core logic and error cases
 
@@ -16,7 +16,7 @@
 
 - [ ] Add logger with structured logging
 
-- [ ] Gracefully handle Ctrl+C signal to exit
+- [x] Gracefully handle Ctrl+C signal to exit
 
 - [ ] Rate limit requests to avoid hitting LLM quotas
 
