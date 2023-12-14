@@ -62,7 +62,7 @@ func initialModel() model {
 
 	// Create a new viewport
 	messagesVP := viewport.New(180, 10)
-	messagesVP.SetContent("Welcome to the chat room!\nType a message and press Enter to send.") // Set initial welcome message
+	messagesVPWelcome := "Welcome to the chat room!\nType a message and press Enter to send." // Set initial welcome message
 
 	input.KeyMap.InsertNewline.SetEnabled(false) // Disable newline insertion on enter
 
@@ -77,12 +77,16 @@ func initialModel() model {
 	claudeEnterMessage := "Claude has entered the chat"
 	botStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("5")).Italic(true)
 	claudeEnterMsg := botStyle.Render(claudeEnterMessage)
-	messages := []string{claudeEnterMsg}
+	welcome := []string{messagesVPWelcome}
+	welcome = append(welcome, claudeEnterMsg) // Append Claude's entrance message
+
+	// Set viewport content with the modified messages slice
+	messagesVP.SetContent(strings.Join(welcome, "\n"))
 
 	// Return model with initial state
 	return model{
 		input:       input,
-		messages:    messages,
+		messages:    []string{},
 		messagesVP:  messagesVP,
 		senderStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("5")),
 		err:         nil,
