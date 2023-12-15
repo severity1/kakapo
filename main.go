@@ -11,13 +11,16 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/nathan-fiscaletti/consolesize-go"
 	"github.com/tmc/langchaingo/llms"
 )
 
 // Main function is the entry point of the program
 func main() {
+	cols, rows := consolesize.GetConsoleSize()
+
 	// Create a new Bubble Tea program instance, passing in our initial model
-	p := tea.NewProgram(initialModel())
+	p := tea.NewProgram(initialModel(cols, rows))
 
 	// Run the Bubble Tea program loop
 	if _, err := p.Run(); err != nil {
@@ -34,7 +37,8 @@ type (
 
 // Model stores the application state
 type model struct {
-	messagesVP    viewport.Model // messagesVP component to display chat messages
+	messagesVP    viewport.Model // For displaying chat messages
+	inputVP       viewport.Model // For user input
 	messages      []string       // Slice of strings to store chat messages
 	input         textarea.Model // Textarea component for user input
 	senderStyle   lipgloss.Style // Style for rendering user messages
@@ -44,25 +48,41 @@ type model struct {
 }
 
 // Returns the initial model state
-func initialModel() model {
+func initialModel(cols, rows int) model {
+	// Calculate dynamic viewport heights
+	messagesVPHeight := rows - 8 // Adjust as needed
+	inputVPHeight := 3           // Adjust as needed
+	inputTextareaHeight := 3     // Adjust as needed
+
+	// Calculate remaining space for message and input viewports
+	remainingRows := rows - (messagesVPHeight + inputVPHeight + inputTextareaHeight)
+
+	// Determine if there's extra space to distribute
+	if remainingRows > 0 {
+		inputVPHeight += remainingRows
+	}
+
 	// Create a new textarea component
 	input := textarea.New()
 	input.Placeholder = "Send a message..." // Set placeholder text
 	input.Focus()                           // Set initial focus on textarea
 
-	input.Prompt = "┃ "   // Set textarea prompt style
-	input.CharLimit = 280 // Set character limit
+	input.Prompt = "┃ "    // Set textarea prompt style
+	input.CharLimit = 2048 // Set character limit
 
 	// Set textarea dimensions
-	input.SetWidth(180)
-	input.SetHeight(4)
+	input.SetWidth(cols)
+	input.SetHeight(inputTextareaHeight)
 
 	input.FocusedStyle.CursorLine = lipgloss.NewStyle() // Remove cursor line styling
 	input.ShowLineNumbers = false                       // Disable line number view
 
-	// Create a new viewport
-	messagesVP := viewport.New(180, 10)
+	// Create a new viewport with console width and height
+	messagesVP := viewport.New(cols, messagesVPHeight)
 	messagesVPWelcome := "Welcome to the chat room!\nType a message and press Enter to send." // Set initial welcome message
+
+	// Create a new viewport for the input
+	inputVP := viewport.New(cols, inputVPHeight)
 
 	input.KeyMap.InsertNewline.SetEnabled(false) // Disable newline insertion on enter
 
@@ -89,6 +109,7 @@ func initialModel() model {
 		input:       input,
 		messages:    []string{},
 		messagesVP:  messagesVP,
+		inputVP:     inputVP,
 		senderStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("5")),
 		err:         nil,
 		claudeLLM:   claudeLLM,
@@ -173,10 +194,17 @@ func callClaudeLLM(input string, llm *claude.LLM) (string, error) {
 
 // Render the UI view
 func (m model) View() string {
-	// Return formatted string containing:
-	return fmt.Sprintf(
-		"%s\n\n%s",          // Append new lines
-		m.messagesVP.View(), // Viewport for messages
-		m.input.View(),      // Textarea for input
-	) + "\n\n" // Preppend new lines
+	// Calculate viewport views
+	messagesView := m.messagesVP.View()
+	inputView := m.inputVP.View()
+	inputTextareaView := m.input.View()
+
+	// Put the textarea inside the input viewport
+	// This concatenates the input textarea view with the input viewport view
+	fullInputView := inputView + "\n" + inputTextareaView
+
+	// Arrange views without overlap
+	fullView := messagesView + "\n\n" + fullInputView
+
+	return fullView
 }
