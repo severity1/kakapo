@@ -37,8 +37,8 @@ type (
 
 // Model stores the application state
 type model struct {
+	sidebarVP     viewport.Model // For sidebar content
 	messagesVP    viewport.Model // For displaying chat messages
-	inputVP       viewport.Model // For user input
 	messages      []string       // Slice of strings to store chat messages
 	input         textarea.Model // Textarea component for user input
 	senderStyle   lipgloss.Style // Style for rendering user messages
@@ -49,18 +49,14 @@ type model struct {
 
 // Returns the initial model state
 func initialModel(cols, rows int) model {
-	// Calculate dynamic viewport heights
-	messagesVPHeight := rows - 8 // Adjust as needed
-	inputVPHeight := 3           // Adjust as needed
-	inputTextareaHeight := 3     // Adjust as needed
+	// Calculate dynamic viewport heights and widths
+	sidebarVPWidth := cols / 2   // You can adjust this width as needed
+	sidebarVPHeight := rows      // Adjust as needed
+	messagesVPHeight := rows - 7 // Adjust as needed
+	inputTextareaHeight := 5     // Adjust as needed
 
-	// Calculate remaining space for message and input viewports
-	remainingRows := rows - (messagesVPHeight + inputVPHeight + inputTextareaHeight)
-
-	// Determine if there's extra space to distribute
-	if remainingRows > 0 {
-		inputVPHeight += remainingRows
-	}
+	// Calculate width for the messages and input viewports after accounting for the sidebar
+	remainingCols := cols - sidebarVPWidth
 
 	// Create a new textarea component
 	input := textarea.New()
@@ -71,23 +67,22 @@ func initialModel(cols, rows int) model {
 	input.CharLimit = 2048 // Set character limit
 
 	// Set textarea dimensions
-	input.SetWidth(cols)
+	input.SetWidth(remainingCols)
 	input.SetHeight(inputTextareaHeight)
 
 	input.FocusedStyle.CursorLine = lipgloss.NewStyle() // Remove cursor line styling
 	input.ShowLineNumbers = false                       // Disable line number view
 
 	// Create a new viewport with console width and height
-	messagesVP := viewport.New(cols, messagesVPHeight)
-	messagesVPWelcome := "Welcome to the chat room!\nType a message and press Enter to send." // Set initial welcome message
+	sidebarVP := viewport.New(sidebarVPWidth, sidebarVPHeight)
+	messagesVP := viewport.New(remainingCols, messagesVPHeight)
 
-	// Create a new viewport for the input
-	inputVP := viewport.New(cols, inputVPHeight)
+	messagesVPWelcome := "\n\nWelcome to the chat room!\nType a message and press Enter to send." // Set initial welcome message
 
-	input.KeyMap.InsertNewline.SetEnabled(false) // Disable newline insertion on enter
+	input.KeyMap.InsertNewline.SetEnabled(true) // Disable newline insertion on enter
 
 	// Initialize Claude LLM instance and check if initialization was successful
-	claudeLLM, initialized := InitializeClaudeLLM()
+	claudeLLM, initialized := initializeClaudeLLM()
 	if !initialized {
 		// Handle initialization failure
 		return model{claudeInitErr: fmt.Errorf("failed to initialize Claude LLM")}
@@ -101,15 +96,19 @@ func initialModel(cols, rows int) model {
 	welcomeMessage := []string{messagesVPWelcome}
 	welcomeMessage = append(welcomeMessage, claudeEnterMsg) // Append Claude's entrance message
 
+	// Set some placeholder content for the sidebar
+	placeholderContent := "\n\nSidebar Content\nPlaceholder Text\nMore Text..."
+	sidebarVP.SetContent(placeholderContent)
+
 	// Set viewport content with the modified messages slice
 	messagesVP.SetContent(strings.Join(welcomeMessage, "\n"))
 
 	// Return model with initial state
 	return model{
-		input:       input,
-		messages:    []string{},
+		sidebarVP:   sidebarVP,
 		messagesVP:  messagesVP,
-		inputVP:     inputVP,
+		messages:    []string{},
+		input:       input,
 		senderStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("5")),
 		err:         nil,
 		claudeLLM:   claudeLLM,
@@ -140,13 +139,20 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			fmt.Println(m.input.Value()) // Print textarea value
 			return m, tea.Quit           // Return model and quit command
 		case tea.KeyEnter: // On enter keypress
+			userInput := m.input.Value()
+			m.input.Reset() // Clear textarea
+
 			userStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("2")).Italic(true) // User message style
-			m.messages = append(m.messages, userStyle.Render("You: "+m.input.Value()))    // Append user message
+			m.messages = append(m.messages, userStyle.Render("You: "+userInput))          // Append user message
 
 			botStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("5")) // Bot message style
 
+			// Update the viewport with the user's message immediately
+			m.messagesVP.SetContent(strings.Join(m.messages, "\n"))
+			m.messagesVP.GotoBottom()
+
 			// Call Claude LLM with the user input
-			claudeResponse, err := callClaudeLLM(m.input.Value(), m.claudeLLM)
+			claudeResponse, err := callClaudeLLM(userInput, m.claudeLLM)
 			botMsg := ""
 			if err != nil {
 				botMsg = botStyle.Render("Claude: Error processing your request.")
@@ -156,7 +162,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.messages = append(m.messages, botMsg) // Append Claude's response to messages
 			}
 
-			m.input.Reset()                                         // Clear textarea
 			m.messagesVP.SetContent(strings.Join(m.messages, "\n")) // Set viewport content
 			m.messagesVP.GotoBottom()                               // Scroll viewport bottom
 		}
@@ -172,7 +177,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // InitializeClaudeLLM initializes the Claude LLM instance and returns whether initialization was successful
-func InitializeClaudeLLM() (*claude.LLM, bool) {
+func initializeClaudeLLM() (*claude.LLM, bool) {
 	llm, err := claude.New("us-east-1")
 	if err != nil {
 		return nil, false
@@ -195,16 +200,29 @@ func callClaudeLLM(input string, llm *claude.LLM) (string, error) {
 // Render the UI view
 func (m model) View() string {
 	// Calculate viewport views
+	sidebarView := m.sidebarVP.View()
 	messagesView := m.messagesVP.View()
-	inputView := m.inputVP.View()
 	inputTextareaView := m.input.View()
 
-	// Put the textarea inside the input viewport
-	// This concatenates the input textarea view with the input viewport view
-	fullInputView := inputView + "\n" + inputTextareaView
+	// Define styles for the viewports
+	sidebarStyle := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.AdaptiveColor{Light: "5", Dark: "5"}).Margin(0, 0)
+	messagesStyle := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.AdaptiveColor{Light: "5", Dark: "5"}).Margin(0, 1)
+	textareaStyle := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.AdaptiveColor{Light: "5", Dark: "5"}).Margin(0, 1)
 
-	// Arrange views without overlap
-	fullView := messagesView + "\n\n" + fullInputView
+	// Apply styles to the viewport content
+	styledSidebar := sidebarStyle.Render(sidebarView)
+	styledMessages := messagesStyle.Render(messagesView)
+	styledTextarea := textareaStyle.Render(inputTextareaView)
 
-	return fullView
+	// Adjust the arrangement of views
+	layout := lipgloss.JoinVertical(
+		lipgloss.Bottom,
+		lipgloss.JoinHorizontal(
+			lipgloss.Left,
+			styledSidebar,
+			lipgloss.JoinVertical(lipgloss.Left, styledMessages, styledTextarea), // Rearrange the messages and textarea views
+		),
+	)
+
+	return layout
 }
