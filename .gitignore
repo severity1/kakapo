@@ -22,3 +22,4 @@ go.work
 
 # Others
 *.code-workspace
+*.DS_Store

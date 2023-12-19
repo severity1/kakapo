@@ -50,57 +50,44 @@ type model struct {
 // Returns the initial model state
 func initialModel(cols, rows int) model {
 	// Calculate dynamic viewport heights and widths
-	sidebarVPWidth := cols / 2   // You can adjust this width as needed
-	sidebarVPHeight := rows      // Adjust as needed
-	messagesVPHeight := rows - 7 // Adjust as needed
-	inputTextareaHeight := 5     // Adjust as needed
-
-	// Calculate width for the messages and input viewports after accounting for the sidebar
+	sidebarVPWidth := cols / 2   // Adjust sidebar width as needed
+	sidebarVPHeight := rows      // Adjust sidebar height as needed
+	messagesVPHeight := rows - 7 // Adjust messages viewport height as needed
+	inputTextareaHeight := 5     // Adjust input textarea height as needed
 	remainingCols := cols - sidebarVPWidth
 
 	// Create a new textarea component
 	input := textarea.New()
-	input.Placeholder = "Send a message..." // Set placeholder text
-	input.Focus()                           // Set initial focus on textarea
-
-	input.Prompt = "┃ "    // Set textarea prompt style
-	input.CharLimit = 2048 // Set character limit
-
-	// Set textarea dimensions
+	input.Placeholder = "Send a message..."
+	input.Focus()
+	input.Prompt = "┃ "
+	input.CharLimit = 2048
 	input.SetWidth(remainingCols)
 	input.SetHeight(inputTextareaHeight)
+	input.FocusedStyle.CursorLine = lipgloss.NewStyle()
+	input.ShowLineNumbers = false
+	input.KeyMap.InsertNewline.SetEnabled(true)
 
-	input.FocusedStyle.CursorLine = lipgloss.NewStyle() // Remove cursor line styling
-	input.ShowLineNumbers = false                       // Disable line number view
-
-	// Create a new viewport with console width and height
+	// Create viewports
 	sidebarVP := viewport.New(sidebarVPWidth, sidebarVPHeight)
 	messagesVP := viewport.New(remainingCols, messagesVPHeight)
 
-	messagesVPWelcome := "\n\nWelcome to the chat room!\nType a message and press Enter to send." // Set initial welcome message
-
-	input.KeyMap.InsertNewline.SetEnabled(true) // Disable newline insertion on enter
-
-	// Initialize Claude LLM instance and check if initialization was successful
+	// Initialize Claude LLM instance
 	claudeLLM, initialized := initializeClaudeLLM()
 	if !initialized {
-		// Handle initialization failure
 		return model{claudeInitErr: fmt.Errorf("failed to initialize Claude LLM")}
 	}
 
-	// Add message indicating Claude has entered the chat
+	// Welcome message and sidebar content
+	messagesVPWelcome := "\n\nWelcome to the chat room!\nType a message and press Enter to send."
 	claudeEnterMessage := "Claude has entered the chat"
 	botStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("5")).Italic(true)
 	claudeEnterMsg := botStyle.Render(claudeEnterMessage)
 
-	welcomeMessage := []string{messagesVPWelcome}
-	welcomeMessage = append(welcomeMessage, claudeEnterMsg) // Append Claude's entrance message
-
-	// Set some placeholder content for the sidebar
 	placeholderContent := "\n\nSidebar Content\nPlaceholder Text\nMore Text..."
-	sidebarVP.SetContent(placeholderContent)
+	welcomeMessage := []string{messagesVPWelcome, claudeEnterMsg}
 
-	// Set viewport content with the modified messages slice
+	sidebarVP.SetContent(placeholderContent)
 	messagesVP.SetContent(strings.Join(welcomeMessage, "\n"))
 
 	// Return model with initial state

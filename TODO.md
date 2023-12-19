@@ -23,7 +23,7 @@
 - [ ] Add monitoring/observability (metrics, tracing)
 
 - [ ] Create CLI with flags for region, model etc
+  
+- [ ] Implement  Retrieval-augmented generation (RAG)
 
 The core functionality works well already but these could help take it to the next level in terms of quality, maintainability and production-readiness. Let me know if any particular items stand out as priorities!
-
-
