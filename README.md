@@ -31,3 +31,6 @@ This program is a terminal-based chat interface that integrates with an AI-power
 - [ ] `ollama.llama2`
 - [ ] `openai.gpt-3_5`
 - [ ] `openai.gpt-4`
+
+## TODO
+Refer to this [TODO](TODO.md) list.
