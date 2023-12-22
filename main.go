@@ -143,7 +143,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				Foreground(lipgloss.Color("5")).
 				Align(lipgloss.Left) // Bot message style
 
-			userMsg := userStyle.Render("You: " + strings.TrimRight(userInput, "\n"))
+			wrappedUserMsg := wordwrap.WrapString(userInput, uint(width-25))
+			userMsg := userStyle.Render("You: " + wrappedUserMsg)
 
 			m.messages = append(m.messages, userMsg) // Append user message
 
@@ -160,8 +161,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			} else {
 				// Wrap the response here before rendering
-				wrappedResponse := wordwrap.WrapString(claudeResponse, uint(width-25))
-				botMsg = botStyle.Render("Claude:" + wrappedResponse)
+				wrappedBotResponse := wordwrap.WrapString(claudeResponse, uint(width-25))
+				botMsg = botStyle.Render("Claude:" + wrappedBotResponse)
 			}
 			m.messages = append(m.messages, botMsg)
 
