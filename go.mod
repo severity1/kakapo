@@ -8,7 +8,7 @@ require (
 	github.com/charmbracelet/bubbletea v0.25.0
 	github.com/charmbracelet/lipgloss v0.9.1
 	github.com/mitchellh/go-wordwrap v1.0.1
-	github.com/tmc/langchaingo v0.1.0
+	github.com/tmc/langchaingo v0.1.1
 	golang.org/x/term v0.15.0
 )
 
