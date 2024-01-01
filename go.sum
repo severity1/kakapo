@@ -74,8 +74,8 @@ github.com/rivo/uniseg v0.1.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJ
 github.com/rivo/uniseg v0.2.0 h1:S1pD9weZBuJdFmowNwbpi7BJ8TNftyUImj/0WQi72jY=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
 github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
-github.com/tmc/langchaingo v0.1.0 h1:FnrTw0o0Ez273qQvMYGLrHAlAlUH1ZVeUJh4iIlD3L4=
-github.com/tmc/langchaingo v0.1.0/go.mod h1:Jhp3ukqxk4zHo+JwwDRs5+5TCxkAzTKdnqZsU9sRfZc=
+github.com/tmc/langchaingo v0.1.2 h1:iyk/BSiA7rQ3jUk0oINs3RqjSDyv0UkMs3YnUXaHBFM=
+github.com/tmc/langchaingo v0.1.2/go.mod h1:6gFzplGo6st/1G5y/Yv/7kGMI8NmFsCFImU24hqZ5Tw=
 golang.org/x/sync v0.5.0 h1:60k92dhOjHxJkrqnwsfl8KuaHbn/5dl0lUPUklKo3qE=
 golang.org/x/sync v0.5.0/go.mod h1:Czt+wKu1gCyEFDUtn0jG5QVvpJ6rzVqr5aXyt9drQfk=
 golang.org/x/sys v0.1.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
