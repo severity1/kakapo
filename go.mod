@@ -8,7 +8,7 @@ require (
 	github.com/charmbracelet/bubbletea v0.25.0
 	github.com/charmbracelet/lipgloss v0.9.1
 	github.com/mitchellh/go-wordwrap v1.0.1
-	github.com/tmc/langchaingo v0.1.0
+	github.com/tmc/langchaingo v0.1.5
 	golang.org/x/term v0.15.0
 )
 
@@ -34,7 +34,7 @@ require (
 	github.com/dlclark/regexp2 v1.10.0 // indirect
 	github.com/google/uuid v1.4.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
-	github.com/mattn/go-isatty v0.0.18 // indirect
+	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/muesli/ansi v0.0.0-20211018074035-2e021307bc4b // indirect
