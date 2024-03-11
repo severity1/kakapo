@@ -6,7 +6,7 @@ require (
 	github.com/build-on-aws/langchaingo-amazon-bedrock-llm v0.0.0-20231107194751-26c156c30214
 	github.com/charmbracelet/bubbles v0.17.1
 	github.com/charmbracelet/bubbletea v0.25.0
-	github.com/charmbracelet/lipgloss v0.9.1
+	github.com/charmbracelet/lipgloss v0.10.0
 	github.com/mitchellh/go-wordwrap v1.0.1
 	github.com/tmc/langchaingo v0.1.0
 	golang.org/x/term v0.15.0
@@ -43,7 +43,7 @@ require (
 	github.com/muesli/termenv v0.15.2 // indirect
 	github.com/pkoukk/tiktoken-go v0.1.6 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
-	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/rivo/uniseg v0.4.7 // indirect
 	golang.org/x/sync v0.5.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
